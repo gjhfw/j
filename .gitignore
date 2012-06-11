@@ -1,0 +1,6 @@
+*.swp
+default/settings.php
+default/files
+*.gz
+*.tgz
+*.zip
