@@ -1,0 +1,93 @@
+<?php
+
+/**
+ * @file
+ * Synonyms module.
+ */
+
+/**
+ * Implements hook_taxonomy_vocabulary_insert().
+ *
+ * Attach an instance of the synonym field to every
+ * new vocabulary on creation.
+ */
+function synonyms_taxonomy_vocabulary_insert($vocabulary) {
+  $instance = array(
+    'field_name' => 'synonyms_synonym',
+    'entity_type' => 'taxonomy_term',
+    'bundle' => $vocabulary->machine_name,
+    'label' => t('Synonyms for this term'),
+  );
+  field_create_instance($instance);
+}
+
+/**
+ * Returns all synonyms for a given term id.
+ *
+ *  @param $tid
+ *   A term ID.
+ *
+ * @return
+ *   An array containing all synonyms of the given term id.
+ */
+function synonyms_get_synonyms($tid) {
+  $synonyms = array();
+  if ($tid) {
+    $term = taxonomy_term_load($tid);
+    $synonyms_synonym = field_view_field('taxonomy_term', $term, 'synonyms_synonym');
+    if (isset($synonyms_synonym['#items'])){
+      foreach ($synonyms_synonym['#items'] as $delta => $synonym) {
+        $synonyms[] = $synonym['value'];
+      }
+    }
+  }
+  return $synonyms;
+}
+
+/**
+ * Returns the term object that has the given string as a synonym.
+ *
+ * @param $synonym
+ *  A string containing the synonym to search for.
+ *
+ * @return
+ *  An array of term objects containing that synonym.
+ */
+function synonyms_get_synonym_root($synonym) {
+  $query = new EntityFieldQuery;
+  $result = $query
+    ->entityCondition('entity_type', 'taxonomy_term')
+    ->fieldCondition('synonyms_synonym', 'value', $synonym, '=')
+    ->execute();
+
+  return isset($result['taxonomy_term']) ? $result['taxonomy_term'] : array();
+}
+
+/**
+ * Implements hook_node_update_index().
+ *
+ * Ensures that synonyms are included when indexing a node
+ */
+function synonyms_node_update_index($node) {
+  #get the fields defenition of node type
+  $type_fields = field_info_instances('node');
+
+  $synonyms = array();
+  foreach ($type_fields[$node->type] as $field_name => $field) {
+    $fieldinfos = field_info_field($field_name);
+    if ($fieldinfos['type'] == 'taxonomy_term_reference'){
+      $terms = field_view_field('node', $node, $field_name);
+      if (isset($terms['#items'])){
+        foreach ($terms['#items'] as $delta => $term) {
+          $synonyms = array_merge($synonyms, synonyms_get_synonyms($term['tid']));
+        }
+      }
+    }
+  }
+  if (!empty($synonyms)) {
+    return '<strong>(' . implode(', ', $synonyms) . ')</strong>';
+  }
+  else {
+    return FALSE;
+  }
+}
