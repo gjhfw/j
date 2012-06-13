@@ -13,12 +13,12 @@
 define('TCPDF_DOWNLOAD_URI', 'http://sourceforge.net/projects/tcpdf/files/latest');
 
 // URI to the the latest dompdf version.. Hardcoded version unfortunately
-define('DOMPDF_DOWNLOAD_URI', 'http://dompdf.googlecode.com/files/dompdf_0-6-0_beta2.tar.gz');
+define('DOMPDF_DOWNLOAD_URI', 'http://dompdf.googlecode.com/files/dompdf_0-6-0_beta3.tar.gz');
 
 // wkhtmltopdf is a binary, requiring a different download for each platform
-define('WKHTMLTOPDF_AMD64_DOWNLOAD_URI', 'http://wkhtmltopdf.googlecode.com/files/wkhtmltopdf-0.10.0_rc2-static-amd64.tar.bz2');
-define('WKHTMLTOPDF_I386_DOWNLOAD_URI', 'http://wkhtmltopdf.googlecode.com/files/wkhtmltopdf-0.10.0_rc2-static-i386.tar.bz2');
-define('WKHTMLTOPDF_WIN_DOWNLOAD_URI', 'http://wkhtmltopdf.googlecode.com/files/wkhtmltox-0.10.0_rc2-installer.exe');
+define('WKHTMLTOPDF_AMD64_DOWNLOAD_URI', 'http://wkhtmltopdf.googlecode.com/files/wkhtmltopdf-0.11.0_rc1-static-amd64.tar.bz2');
+define('WKHTMLTOPDF_I386_DOWNLOAD_URI', 'http://wkhtmltopdf.googlecode.com/files/wkhtmltopdf-0.11.0_rc1-static-i386.tar.bz2');
+define('WKHTMLTOPDF_WIN_DOWNLOAD_URI', 'http://wkhtmltopdf.googlecode.com/files/wkhtmltox-0.11.0_rc1-installer.exe');
 define('WKHTMLTOPDF_OSX_DOWNLOAD_URI', 'http://wkhtmltopdf.googlecode.com/files/wkhtmltopdf-OSX-0.10.0_rc2-static.tar.bz2');
 
 /**
@@ -81,7 +81,7 @@ function drush_print_pdf_download($library) {
         }
         else {
           drush_log(dt('@file has been downloaded to @path, but extract failed. Check that you have the necessary program installed, and if necessary extract it manually.',
-                       array('@file' => $filename, '@path' => $path)), 'warning');
+                    array('@file' => $filename, '@path' => $path)), 'warning');
         }
       }
       else {
@@ -97,13 +97,13 @@ function drush_print_pdf_download($library) {
   }
 }
 
-/** 
+/**
  * Discover the correct URL of the package to download
  */
 function _drush_print_pdf_download_url($library) {
   $ret = FALSE;
 
-  switch (strtolower($library)) {
+  switch (drupal_strtolower($library)) {
     case 'dompdf':
       $ret = DOMPDF_DOWNLOAD_URI;
       break;
@@ -111,7 +111,7 @@ function _drush_print_pdf_download_url($library) {
       $ret = TCPDF_DOWNLOAD_URI;
       break;
     case 'wkhtmltopdf':
-      switch (substr(php_uname('s'), 0, 3)) {
+      switch (drupal_substr(php_uname('s'), 0, 3)) {
         case 'Lin':
           $ret = (php_uname('m') == 'x86_64') ? WKHTMLTOPDF_AMD64_DOWNLOAD_URI : WKHTMLTOPDF_I386_DOWNLOAD_URI;
           break;
@@ -169,14 +169,15 @@ function _drush_print_pdf_download_extract($filename) {
 }
 
 /**
- * Download a file using wget or curl.
- * Adapted from a function in drush/includes/drush.inc to support 302 redirects
+ * Download a file using wget or curl
+ *
+ * Adapted from a function in drush/includes/drush.inc to support 302 redirects.
  *
  * @param string $download_url
  *   The path to the file to download
  *
  * @return string
- *   The filename that was downloaded, or NULL if the file could not be 
+ *   The filename that was downloaded, or NULL if the file could not be
  *   downloaded.
  */
 function _drush_print_pdf_download_file($download_url) {
