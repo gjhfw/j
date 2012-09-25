@@ -1,0 +1,19 @@
+<?php
+
+/**
+ * @file
+ * Change the paths to standard user pages so that bots find them less
+ * easily.
+ */
+
+function user_paths_menu_alter( &$menu ) {
+
+  $menu['user/an-account-would-be-nice'] = $menu['user/register'];
+  unset( $menu['user/register'] );
+}
+
+function user_paths_form_user_login_block_alter( &$form, $form_state ) {
+
+  $form['links']['#markup'] = str_replace(
+    '/user/register', '/user/an-account-would-be-nice', $form['links']['#markup'] );
+}

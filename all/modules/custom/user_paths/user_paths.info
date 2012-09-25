@@ -1,0 +1,4 @@
+name = User paths
+description = Change the paths to standard user pages so that bots do not find them so easily
+package = Custom
+core = 7.x
